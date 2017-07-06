@@ -1,0 +1,3 @@
+// #define BUILD_HFSPARSER
+#define BUILD_PREFETCHER
+// #define BUILD_TDD

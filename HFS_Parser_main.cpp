@@ -101,7 +101,7 @@ void do_analysis_for_LG_project(string _input_file)
 	parser.calculateAddIOHandlingTimeInEMMCtoPureIO(process_list);
 
 	//	analyis is prepared well and now result will be generated
-	parser.userInterface();
+	parser.genPrefetchingCode();
 
 	parser.showParsingResult();
 	

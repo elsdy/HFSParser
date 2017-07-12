@@ -302,6 +302,7 @@ public:
 		CPU = NULL;
 
 		init();
+		parseLog();
 	}
 	// there are two types of constructor with CPU allocated and not
 	// so that destructer should be distinguish the two cases
@@ -968,7 +969,7 @@ public:
 
 	void parseLog();
 
-	void userInterface();
+	void genPrefetchingCode();
 
 	void printTimeComposition( Node <ProcessInfo> *target_process);
 

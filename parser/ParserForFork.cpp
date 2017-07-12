@@ -15,7 +15,7 @@
 //https://solarianprogrammer.com/2011/10/12/cpp-11-regex-tutorial/
 //http://www.codeguru.com/cpp/cpp/cpp_mfc/stl/article.php/c15339/A-TR1-Tutorial-Regular-Expressions.htm
 
-//void buildForkTree()
+//void genParentChildTree()
 //{
 //	multimap<int , int > m;
 //
@@ -36,8 +36,15 @@
 
 multimap <int, int> pidtree;
 
+/*
+1. open "input/fork.log"
+- the file comes from the command
+	system("grep sched_process_fork input/vfs.log > input/fork.log");
+2. read a line from "input/fork.log"
+3. make a tree which have a relationship showing parent and child
+*/
 #define DEBUG_buildForkTree 0
-void buildForkTree()
+void genParentChildTree()
 {
 	ifstream input_file;
 
@@ -121,16 +128,10 @@ void testFileNamePath()
 		cout << str_ret << endl << endl;
 
 //		buildCorrectFilePath(str_filename);
-
 		}
 }
 
 
-/**
- * brief
- * param
- * return
- */
 void printForkTree()
 {
 	int m;

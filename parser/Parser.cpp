@@ -3513,47 +3513,12 @@ void Parser::parseLog()
 	showParsingResult();
 }
 
-void Parser::userInterface()
+void Parser::genPrefetchingCode()
 {
+	cout << "generating prefetch codes" << endl;
 
-retry:
-	cout << endl << "select a menu:" << endl;
-#ifdef PROCESS_ANALSYS_MODE_ON
-	cout << PROCESS_ANALYSIS << ". Process Analysis Mode" << endl;
-#endif
-
-#ifdef PREFETCH_MODE_ON
-	cout << PREFETCHIGN_ANALYSIS << ". Prefetching Analysis mode" << endl;
-#endif
-
-	cout << "0. quit" << endl;
-	cout << ": ";
-
-	cin >> analyze_mode;
-
-	switch (analyze_mode) {
-#ifdef PROCESS_ANALSYS_MODE_ON
-		case PROCESS_ANALYSIS:
-			break;
-#endif
-
-#ifdef PREFETCH_MODE_ON
-		case PREFETCHIGN_ANALYSIS:
-			buildForkTree();
-			prefetchingMode( process_list );
-			break;
-#endif
-
-		case QUIT:
-			cout << "analyzer terminated" << endl;
-			return;
-
-		default:
-			break;
-	}
-
-	goto retry;
-
+	genParentChildTree();
+	generatePrefetchingCodes(process_list);
 }
 
 List <ProcessInfo> * Parser::searchProcessesWithName(List <ProcessInfo> *p_list, string pname, List <ProcessInfo> *t_list)
@@ -3659,32 +3624,6 @@ Node <ParseEntry> * Parser::searchParseEntrywithTimeStamp( List <ParseEntry> *pa
 	}
 
 	return iter;
-}
-
-/**
- * brief
- prefetching Mode 1
- * param
- * return
- */
-
-void Parser::prefetchingMode( List <ProcessInfo> * list_process)
-{
-	cout << "generate Prefetching Codes" << endl;
-
-	int mode = 0;
-	enum mode_prefetching {GENERATE_PREFETCHING_CODES};
-
-	switch ( mode )
-	{
-		case GENERATE_PREFETCHING_CODES:
-		{
-			generatePrefetchingCodes(list_process);
-			break;
-		}
-		default:
-			break;
-	}
 }
 
 // iter_pare is iterator

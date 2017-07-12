@@ -52,12 +52,18 @@ void genPreferchingCode(string _input_file)
 {
 	Parser parser(_input_file);
 
-	parser.parseLog();
-
-	parser.showParsingResult();
-
 	//	analyis is prepared well and now result will be generated
-	parser.userInterface();
+	parser.GENPREFETCHINGCODE();
+}
+
+void genForkRelationship()
+{
+	system("grep sched_process_fork input/vfs.log > input/fork.log");
+}
+
+void rmForkRelationship()
+{
+	system("rm input/fork.log");
 }
 
 // 1. generate a file named "fork.log" which is extracted from the vfs.log" with a line "sched_process_fork"
@@ -68,11 +74,12 @@ void genPreferchingCode(string _input_file)
 
 int main(int argc, const char * argv[])
 {
-	//	buildForkTree();
+	//	genParentChildTree();
 	//	printForkTree();
-	system("grep sched_process_fork input/vfs.log > input/fork.log");
+	genForkRelationship();
 	genPreferchingCode(argv[1]);
-	system("rm input/fork.log");
+	rmForkRelationship();
+
 	//	testFileNamePath();
 
 	return 0;

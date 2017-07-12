@@ -25,7 +25,7 @@ using namespace std;
 
 extern multimap <int, int> pidtree;
 
-void buildForkTree();
+void genParentChildTree();
 void printForkTree();
 void testFileNamePath();
 

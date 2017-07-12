@@ -53,7 +53,7 @@ void genPreferchingCode(string _input_file)
 	Parser parser(_input_file);
 
 	//	analyis is prepared well and now result will be generated
-	parser.GENPREFETCHINGCODE();
+	parser.genPrefetchingCode();
 }
 
 void genForkRelationship()

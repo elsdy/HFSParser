@@ -103,7 +103,7 @@ void do_analysis_for_LG_project(string _input_file)
 	//	analyis is prepared well and now result will be generated
 	parser.userInterface();
 
-	parser.summary();
+	parser.showParsingResult();
 	
 #if DEBUG_do_analysis_for_LG_project
 	parser.debugParseEntryNFileIOPerProcess( process_list );

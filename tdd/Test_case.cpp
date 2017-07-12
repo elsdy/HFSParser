@@ -240,7 +240,7 @@ void test_nexus_iozone1()
 	parser.calculatePureIOHandlingTimeInViewsOfCPUExecutionTime(process_list);
 	parser.calculatePureIOHandlingTimeExcludingInterrupt(process_list);
 		
-	parser.summary();
+	parser.showParsingResult();
 	
 #if DEBUG_test_nexus_iozone1
 	parser.debugParseEntryNFileIOPerProcess( process_list );
@@ -446,7 +446,7 @@ void test_packed_command()
 	parser.findPackedBlockIO(block_io_list, eMMC_io_list);
 	block_io_list->printList(  LOG_BLOCK_EMMC_MAPPING_IN_PACKED_RELATION_SHIP(PLATFORM3)  );
 		
-	parser.summary();
+	parser.showParsingResult();
 	
 	delete process_list;
 	delete block_io_list;

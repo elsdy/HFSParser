@@ -407,7 +407,7 @@ public:
 #define DEBUG_input 0
 	int input(string _file_to_open);
 	
-	void summary();
+	void showParsingResult();
 	float detectLogVersion(string _file_to_open);
 	
 #pragma mark - Time Approximation (approximateTime_inParseList)

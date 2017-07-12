@@ -288,7 +288,7 @@ int Parser::input(string _file_to_open) {
 	return 1;
 }
 
-void Parser::summary()
+void Parser::showParsingResult()
 {
 	int sm_idx = 1;
 	
@@ -413,7 +413,7 @@ int Parser::calHopCount( Node<ParseEntry> *_cpu_start, Node<ParseEntry> *_cpu_en
 }
 
 
-int Parser::approximateTime(  Node<ParseEntry> *_cpu_start, Node<ParseEntry> *_cpu_end, double _time_offset, long *_modified_entry)
+int Parser::approximateTime(  Node<ParseEntry> *_cpu_start, Node<ParseEntry> *_cpu_end, double _time_offset, long *num_modified_entry)
 {
 	Node <ParseEntry> *cur = _cpu_start;
 	double base_timestamp = cur->entry->getTimeStamp();
@@ -427,7 +427,7 @@ int Parser::approximateTime(  Node<ParseEntry> *_cpu_start, Node<ParseEntry> *_c
 		{
 			//				cout.precision(9);
 			//				cout << cur->entry->getTimeStamp() << " -> " << cur->entry->getApproxTimeStamp() << endl;
-			(*_modified_entry)++;
+			(*num_modified_entry)++;
 		}
 		if (cur == _cpu_end)
 		{
@@ -439,7 +439,7 @@ int Parser::approximateTime(  Node<ParseEntry> *_cpu_start, Node<ParseEntry> *_c
 	return 1;
 }
 
-int Parser::approximateTime_inParseList(long *_modified_entry)
+int Parser::approximateTime_inParseList(long *num_modified_entry)
 {
 	cout << endl << "Approximating time due to the limited timer resulution is in progress" << endl;
 	
@@ -449,7 +449,7 @@ int Parser::approximateTime_inParseList(long *_modified_entry)
 	
 	double prev_time_resolution = 0;
 	
-	*_modified_entry = 0;
+	*num_modified_entry = 0;
 	
 	// loop init
 	Node<ParseEntry> *interval_start = ParseList->getHead();
@@ -492,7 +492,7 @@ int Parser::approximateTime_inParseList(long *_modified_entry)
 			{
 				assert(0);
 			}
-			*_modified_entry += modified_entry;
+			*num_modified_entry += modified_entry;
 			
 			if(cpu_end == interval_end)
 			{
@@ -502,7 +502,7 @@ int Parser::approximateTime_inParseList(long *_modified_entry)
 		}
 		if(interval_end == list_end)
 		{
-			assert ( * _modified_entry <= ParseList->getSize() );
+			assert ( * num_modified_entry <= ParseList->getSize() );
 	
 			return 0;
 		}
@@ -3443,6 +3443,7 @@ void Parser::generateVFSInfo( List <ProcessInfo> *target_processes)
 	fclose(fout);
 }
 
+
 void Parser::parseLog()
 {
 	long modified_entry = 0;
@@ -3509,6 +3510,7 @@ void Parser::parseLog()
 
 	calculateAddIOHandlingTimeInEMMCtoPureIO(process_list);
 
+	showParsingResult();
 }
 
 void Parser::userInterface()

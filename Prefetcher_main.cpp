@@ -48,13 +48,13 @@ using namespace std;
 
 #include <stdio.h>
 
-void do_analysis_in_interface_mode(string _input_file)
+void genPreferchingCode(string _input_file)
 {
 	Parser parser(_input_file);
 
 	parser.parseLog();
 
-	parser.summary();
+	parser.showParsingResult();
 
 	//	analyis is prepared well and now result will be generated
 	parser.userInterface();
@@ -66,16 +66,14 @@ void do_analysis_in_interface_mode(string _input_file)
 //   (1) parent only prefetching mode
 //   (2) parent and all children prefetching mode
 
-#ifdef BUILD_PREFETCHER
 int main(int argc, const char * argv[])
 {
 	//	buildForkTree();
 	//	printForkTree();
 	system("grep sched_process_fork input/vfs.log > input/fork.log");
-	do_analysis_in_interface_mode(argv[1]);
+	genPreferchingCode(argv[1]);
 	system("rm input/fork.log");
 	//	testFileNamePath();
 
 	return 0;
 }
-#endif

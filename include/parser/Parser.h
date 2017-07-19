@@ -293,6 +293,7 @@ public:
 #endif
 		
 		CPU = new CPUInfo (MaxCpuNum);
+		parseLog();
 	}
 	
 	Parser()
@@ -985,7 +986,7 @@ public:
 	Node <ParseEntry> * searchParseEntrywithTimeStamp( List <ParseEntry> *parse_list, double tp);
 
 	void prefetchingMode( List <ProcessInfo> * p_list);
-	void generatePrefetchingCodes( List <ProcessInfo> * list_process);
+	void commandWithProcessList( List <ProcessInfo> * list_process);
 
 	void createPrefetcherCode(string FileName, List <ProcessInfo> *target_processes);
 	void writePrefetchCodeHeader();
@@ -1006,6 +1007,15 @@ public:
 	bool isExcluded(string filename);
 
 	iotype checkLogType(string iolog);
+
+// 20170712
+	void showMenu();
+	void showProcesses(List <ProcessInfo> * list_process);
+	void searchPID(List <ProcessInfo> * list_process);
+	List <ProcessInfo> *setPIDtoPrefetch(List <ProcessInfo> * list_process);
+	void showTargetProcesses(List<ProcessInfo> *target_processes);
+
+
 };
 
 #endif /* PARSER_H_ */

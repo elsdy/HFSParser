@@ -8,6 +8,57 @@
 
 #include "IOInfo.h"
 
+IOInfo::IOInfo():StartFinishTimeInfo()
+{
+	init();
+}
+IOInfo::IOInfo( Node<ParseEntry> * _io_start, Node<ParseEntry> *_io_end, int _Fd, long _Size, long _Pos, string _filename): StartFinishTimeInfo( _io_start, _io_end)
+{
+	init();
+
+	Fd = _Fd;
+	Size = _Size;
+
+	FileName = _filename;
+
+	Pos = _Pos;
+
+	identify_R_W_type( _io_start );
+}
+IOInfo::IOInfo( Node<ParseEntry> * _io_start, Node<ParseEntry> *_io_end): StartFinishTimeInfo( _io_start, _io_end)
+{
+	init();
+
+	identify_R_W_type( _io_start );
+}
+IOInfo::~IOInfo()
+{
+	delete PureIoHandlingParticle;
+	delete Interrupt;
+	delete SoftInterrupt;
+}
+
+void IOInfo::init()
+{
+	Fd = Size = Pos = 0;
+
+	PureIoHandlingParticle = new List <StartFinishTimeInfo> ();
+	PureIoHandlingTime = 0;
+
+	FileName = "";
+	R_W_type = "";
+
+	MappedBlockIO = NULL;
+	MappedEmmcIO = NULL;
+
+	Interrupt = new List <InterruptInfo> ();
+	TotalInterruptHandlingTime = 0;
+	SoftInterrupt = new List <SoftInterruptInfo> ();
+	TotalSoftInterruptHandlingTime = 0;
+
+	eMMCOperation = NULL;
+}
+
 int IOInfo::getFd()
 {
 	return Fd;
@@ -109,9 +160,46 @@ void IOInfo::printPureIoHandling(ofstream & _out)
 	PureIoHandlingParticle->printList(_out);
 }
 
-void IOInfo::printVFSInfo(ofstream & _out)
+double IOInfo::getTotalInterruptHandlingTime()
 {
-
+	return TotalInterruptHandlingTime;
 }
+
+void IOInfo::setTotalInterruptHandlingTime(double _value)
+{
+	TotalInterruptHandlingTime = _value;
+}
+
+void IOInfo::addTotalInterruptHandlingTime(double _value)
+{
+	TotalInterruptHandlingTime += _value;
+}
+
+double IOInfo::getTotalSoftInterruptHandlingTime()
+{
+	return TotalSoftInterruptHandlingTime;
+}
+
+void IOInfo::setTotalSoftInterruptHandlingTime(double _value)
+{
+	TotalSoftInterruptHandlingTime = _value;
+}
+
+void IOInfo::addTotalSoftInterruptHandlingTime(double _value)
+{
+	TotalSoftInterruptHandlingTime += _value;
+}
+
+BlockInfo *IOInfo::getMappedBlockIO()
+{
+	return MappedBlockIO;
+}
+
+void IOInfo::setMappedBlockIO(BlockInfo *_block_io)
+{
+	MappedBlockIO = _block_io;
+}
+
+
 
 

@@ -23,6 +23,17 @@
 using namespace std;
 
 class ParseEntry {
+public:
+	ParseEntry();
+	ParseEntry(string _line);
+	ParseEntry(string _line, long _line_number, string _log_version);
+	~ParseEntry();
+
+
+private:
+	void init();
+
+
 private:
 	/// line number
 	long LineNumber;
@@ -54,61 +65,21 @@ private:
 #define INTERRUT		1 << 3
 #define SCHEDULE		1 << 4
 	BitSet isCollectedInWhichList;
-	
-protected:
 
+
+protected:
 #define DEBUG_basic_parse_line_for_log_v1 0
 	void basic_parse_line_for_log_v1(const char *line, long _line_number);
 #define DEBUG_basic_parse_line_for_log_v2 0
 	void basic_parse_line_for_log_v2(const char *line, long _line_number);
 #define DEBUG_basic_parse_line_for_log_v2_1 0
 	void basic_parse_line_for_log_v2_1(const char *_line, long _line_number);
-
 	void basic_parse_line_for_log_with_regex(const char *_line, long _line_number);
 
 	char * strrstr(const char *str, const char *strSearch);
 
+
 public:
-	ParseEntry()
-	{
-		init();
-	}
-	ParseEntry(string _line)
-	{
-		const char *buf = _line.c_str();
-		init();
-		basic_parse_line_for_log_v1(buf, 0);
-	}
-	
-	ParseEntry(string _line, long _line_number, string _log_version)
-	{
-		const char *buf = _line.c_str();
-		
-		init();
-		
-		if(_log_version == "1.0")
-		{
-			basic_parse_line_for_log_v1(buf, _line_number);
-//			basic_parse_line_for_log_with_regex(buf, _line_number);
-		}
-		else if(_log_version == "2.0")
-		{	basic_parse_line_for_log_v2(buf, _line_number);
-		}
-		else if(_log_version == "2.1")
-		{
-			basic_parse_line_for_log_v2_1(buf, _line_number);
-		}
-		else{
-			basic_parse_line_for_log_with_regex(buf, _line_number);
-		}
-	}
-
-	~ParseEntry()
-	{
-	}
-
-	void init();
-	
 	long getLineNumber();
 	void setLineNumber(long _ln);
 	int getProcessID();
@@ -125,19 +96,11 @@ public:
 	void setApproxTimeStamp(double _ts);
 	
 	BitSet &getisCollectedInWhichList();
-	
 	void setisCollectedInWhichList(BitSet _bs);
-	
-	string getProcessName()
-	{
-		return ProcessName;
-	}
-	
-	void setProcessName(string _value)
-	{
-		ProcessName = _value;
-	}
-	
+	string getProcessName();
+	void setProcessName(string _value);
+
+
 #pragma mark  - for debug
 	void printParseEntry(ofstream &fout);
 	void printParseEntry();

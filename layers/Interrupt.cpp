@@ -8,6 +8,29 @@
 
 #include "Interrupt.h"
 
+InterruptInfo::InterruptInfo(): StartFinishTimeInfo()
+{
+	init();
+}
+InterruptInfo::InterruptInfo(Node <ParseEntry> * _a, Node <ParseEntry> * _b): StartFinishTimeInfo( _a, _b)
+{
+	init();
+}
+
+InterruptInfo::~InterruptInfo()
+{
+
+}
+
+void InterruptInfo::init()
+{
+	IrqNum = -1;
+	Name = "";
+	HandlerName = "";
+}
+
+
+
 #pragma mark - class InterruptInfo
 int InterruptInfo::getIrqNum()
 {
@@ -41,6 +64,22 @@ void InterruptInfo::setHandlerName(string _value)
 
 
 #pragma mark - class SoftInterruptInfo
+SoftInterruptInfo::SoftInterruptInfo(): StartFinishTimeInfo()
+{
+	init();
+}
+SoftInterruptInfo::SoftInterruptInfo(Node <ParseEntry> * _a, Node <ParseEntry> * _b): StartFinishTimeInfo (_a, _b)
+{
+	init();
+
+	StartFinishTimeInfo::setStart(_a->entry);
+	StartFinishTimeInfo::setFinish(_b->entry);
+}
+SoftInterruptInfo::~SoftInterruptInfo()
+{
+
+}
+
 int SoftInterruptInfo::getVec()
 {
 	return Vec;
@@ -61,5 +100,10 @@ void SoftInterruptInfo::setAction(string _value)
 	Action = _value;
 }
 
+void SoftInterruptInfo::init()
+{
+	Vec = 0;
+	Action = "";
+}
 
 

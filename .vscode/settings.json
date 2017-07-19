@@ -2,6 +2,8 @@
     "files.associations": {
         "regex": "cpp",
         "__locale": "cpp",
-        "algorithm": "cpp"
+        "algorithm": "cpp",
+        "iosfwd": "cpp",
+        "iostream": "cpp"
     }
 }

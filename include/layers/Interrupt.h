@@ -16,34 +16,22 @@
 
 class InterruptInfo: public StartFinishTimeInfo
 {
+	#pragma mark - constructor & destructor
+public:
+	InterruptInfo();
+	InterruptInfo(Node <ParseEntry> * _a, Node <ParseEntry> * _b);
+	~InterruptInfo();
+	void init();
+
+
 private:
 	int IrqNum;
 	string Name;
 	string HandlerName;
-	
-	void init()
-	{
-		IrqNum = -1;
-		Name = "";
-		HandlerName = "";
-	}
-	
-public:
-	InterruptInfo(): StartFinishTimeInfo()
-	{
-		init();
-	}
-	InterruptInfo(Node <ParseEntry> * _a, Node <ParseEntry> * _b): StartFinishTimeInfo( _a, _b)
-	{
-		init();
-	}
 
-	~InterruptInfo()
-	{
-		
-	}
-	
-	
+
+	#pragma mark - getter & setter
+public:
 	int getIrqNum();
 	void setIrqNum(int _value);
 	string getName();
@@ -54,34 +42,22 @@ public:
 
 class SoftInterruptInfo: public StartFinishTimeInfo
 {
+public:
+	SoftInterruptInfo();
+	SoftInterruptInfo(Node <ParseEntry> * _a, Node <ParseEntry> * _b);
+	~SoftInterruptInfo();
+
+
+private:
+	void init();
+
+
 private:
 	int Vec;
 	string Action;
 	
-	void init()
-	{
-		Vec = 0;
-		Action = "";
-	}
-	
+
 public:
-	
-	SoftInterruptInfo(): StartFinishTimeInfo()
-	{
-		init();
-	}
-	SoftInterruptInfo(Node <ParseEntry> * _a, Node <ParseEntry> * _b): StartFinishTimeInfo (_a, _b)
-	{
-		init();
-		
-		StartFinishTimeInfo::setStart(_a->entry);
-		StartFinishTimeInfo::setFinish(_b->entry);
-	}
-	~SoftInterruptInfo()
-	{
-		
-	}
-	
 	int getVec();
 	void setVec(int _value);
 	string getAction();

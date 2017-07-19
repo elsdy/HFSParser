@@ -9,6 +9,44 @@
 #include "ParseEntry.h"
 
 #pragma mark - Class ParseEntry get / set Methods
+ParseEntry::ParseEntry()
+{
+	init();
+}
+
+ParseEntry::ParseEntry(string _line)
+{
+	const char *buf = _line.c_str();
+	init();
+	basic_parse_line_for_log_v1(buf, 0);
+}
+
+ParseEntry::ParseEntry(string _line, long _line_number, string _log_version)
+{
+	const char *buf = _line.c_str();
+
+	init();
+
+	if(_log_version == "1.0")
+	{
+		basic_parse_line_for_log_v1(buf, _line_number);
+		//			basic_parse_line_for_log_with_regex(buf, _line_number);
+	}
+	else if(_log_version == "2.0")
+	{	basic_parse_line_for_log_v2(buf, _line_number);
+	}
+	else if(_log_version == "2.1")
+	{
+		basic_parse_line_for_log_v2_1(buf, _line_number);
+	}
+	else{
+		basic_parse_line_for_log_with_regex(buf, _line_number);
+	}
+}
+
+ParseEntry::~ParseEntry()
+{
+}
 
 void ParseEntry::init()
 {
@@ -87,11 +125,21 @@ BitSet & ParseEntry::getisCollectedInWhichList()
 	return isCollectedInWhichList;
 }
 
+string ParseEntry::getProcessName()
+{
+	return ProcessName;
+}
+
+void ParseEntry::setProcessName(string _value)
+{
+	ProcessName = _value;
+}
+
+
 void ParseEntry::setisCollectedInWhichList(BitSet _bs)
 {
 	isCollectedInWhichList = _bs;
 }
-
 
 
 

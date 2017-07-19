@@ -8,6 +8,95 @@
 
 #include "CPUInfo.h"
 
+CPUInfo::CPUInfo()
+{
+	init();
+}
+
+CPUInfo::CPUInfo(int _cpu_num)
+{
+	CPUInfo();
+
+	MaxCpuNum = _cpu_num;
+	CntAllLog = 0;
+
+	/// generate list for build logs for all core in a cpu
+	CpuLog = new List <ParseEntry> *[_cpu_num];
+
+	// _cpu_num 개수 만큼 CpuLog를 할당
+	for(int i = 0 ; i < _cpu_num; i++)
+	{
+		CpuLog[i] = new List <ParseEntry>;
+	}
+
+	/// generate list for build logs for all core in a cpu
+	FileIO = new List <IOInfo> *[_cpu_num];
+
+	// _cpu_num 개수 만큼 CpuLog를 할당
+	for(int i = 0 ; i < _cpu_num; i++)
+	{
+		FileIO[i] = new List <IOInfo>;
+	}
+
+	/// generate list for build scheduling time info for all core in a cpu
+	ScheduleTime = new List <ScheduleInfo> *[_cpu_num];
+
+	// _cpu_num 개수 만큼 CpuLog를 할당
+	for(int i = 0 ; i < _cpu_num; i++)
+	{
+		ScheduleTime[i] = new List <ScheduleInfo> ();
+	}
+
+	/// generate list for build interrupt time info for all core in a cpu
+	InterruptTime = new List <InterruptInfo> *[_cpu_num];
+
+	// _cpu_num 개수 만큼 CpuLog를 할당
+	for(int i = 0 ; i < _cpu_num; i++)
+	{
+		InterruptTime[i] = new List <InterruptInfo> ();
+	}
+
+	/// generate list for build interrupt time info for all core in a cpu
+	SoftIrqTime = new List <SoftInterruptInfo> *[_cpu_num];
+
+	// _cpu_num 개수 만큼 CpuLog를 할당
+	for(int i = 0 ; i < _cpu_num; i++)
+	{
+		SoftIrqTime[i] = new List <SoftInterruptInfo> ();
+	}
+}
+
+CPUInfo::~CPUInfo()
+{
+	for(int i = 0; i < MaxCpuNum; i++ )
+	{
+		delete CpuLog[i];
+		delete FileIO[i];
+		delete ScheduleTime[i];
+		delete InterruptTime[i];
+		delete SoftIrqTime[i];
+	}
+
+	delete [] CpuLog;
+	delete [] FileIO;
+	delete [] ScheduleTime;
+	delete [] InterruptTime;
+	delete [] SoftIrqTime;
+
+}
+
+void CPUInfo::init()
+{
+	CpuLog = NULL;
+	FileIO = NULL;
+	ScheduleTime = NULL;
+	InterruptTime = NULL;
+	SoftIrqTime = NULL;
+
+	MaxCpuNum = 0;
+	CntAllLog = 0;
+}
+
 int CPUInfo::getMaxCpuNum()
 {
 	return MaxCpuNum;

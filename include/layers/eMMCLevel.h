@@ -23,64 +23,43 @@ class BlockInfo;
 
 class eMMCInfo:public StartFinishTimeInfo
 {
-private:
-	List <BlockInfo> *MappedBlockInfo;
-	
-	long StartAddress, BlockSz, CntBlocks;
-	
-	int CMD;
+	#pragma mark - constructor & destructor
 public:
-	eMMCInfo(): StartFinishTimeInfo()
-	{
-		init();
-	}
-	
+	eMMCInfo();
 	/**
 	 @exception
 	 no need to free the memory for each pointer such as
 	 ParseEntry *eMMC_start_request, *eMMC_request_done;
 	 BlockInfo *MappedBlockInfo;
 	 */
-	eMMCInfo(Node <ParseEntry> * _a, Node <ParseEntry> * _b): StartFinishTimeInfo (_a, _b)
-	{
-		init();
-		
-		MappedBlockInfo = new List <BlockInfo>();
-	}
-	
-	void init()
-	{
-		MappedBlockInfo = NULL;
-		
-		StartAddress = BlockSz = CntBlocks = 0;
-		CMD = -1;
-	}
-	
-	~eMMCInfo()
-	{
-	}
+	eMMCInfo(Node <ParseEntry> * _a, Node <ParseEntry> * _b);
+	void init();
+	~eMMCInfo();
 
-		
+
+private:
+	List <BlockInfo> *MappedBlockInfo;
+
+	long StartAddress, BlockSz, CntBlocks;
+	int CMD;
+
+
+	#pragma mark - get & set
+public:
 	List <BlockInfo> *getMappedBlockInfo();
-	
 	void pushMappedBlockInfo(BlockInfo *_block);
 	
 	long getStartAddress();
-	
 	void setStartAddress(long _sa);
-	
-	long getCntBlocks();
-	
-	void setCntBlocks(long _nb);
-	
-	long getCMD();
-	
-	void setCMD(int __cmd);
-	
-	long getBlockSz();
 
+	long getCntBlocks();
+	void setCntBlocks(long _nb);
+	long getBlockSz();
 	void setBlockSz(long _value);
-	
+	long getCMD();
+	void setCMD(int __cmd);
+
+
 #pragma mark - for debug
 	void print(ofstream &out);
 };

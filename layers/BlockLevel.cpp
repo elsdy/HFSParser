@@ -8,6 +8,32 @@
 
 #include "BlockLevel.h"
 
+BlockInfo::BlockInfo()
+{
+	StartAddr_BioRemap = Size_BioRemap = 0;
+	StartAddr_BioQueue = Size_BioQueue = 0;
+	StartAddr_GetRq = SIze_GetRq = 0;
+	StartAddr_BioBackMerge = Size_BioBackMerge = 0;
+	StartAddr_BioFrontMerge = Size_BioFrontMerge = 0;
+	StartAddr_RqInsert = Size_RqInsert = 0;
+	StartAddr_RqIssue = Size_RqIssue = 0;
+	StartAddr_RqComplete = Size_RqComplete = 0;
+	R_W = "";
+
+	TimeFromIssueToComplete = TimeFromRemapToIssue = 0;
+	PureTimeFromIssueToComplete = TimeFromRemapToIssue = 0;
+
+	Block_bio_remap = Block_bio_queue = Block_getrq = Block_plug = Block_unplug = Block_bio_backmerge = Block_bio_frontmerge = Block_rq_insert = Block_rq_issue  = Block_rq_complete = NULL;
+
+	MappedIO = NULL;
+	MappedEmmc = NULL;
+}
+
+
+BlockInfo::~BlockInfo()
+{
+}
+
 unsigned long long BlockInfo::getStartAddr_BioRemap()
 {
 	return StartAddr_BioRemap;

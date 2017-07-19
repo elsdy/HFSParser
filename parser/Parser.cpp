@@ -3518,7 +3518,7 @@ void Parser::genPrefetchingCode()
 	cout << "generating prefetch codes" << endl;
 
 	genParentChildTree();
-	generatePrefetchingCodes(process_list);
+	commandWithProcessList(process_list);
 }
 
 List <ProcessInfo> * Parser::searchProcessesWithName(List <ProcessInfo> *p_list, string pname, List <ProcessInfo> *t_list)
@@ -3655,13 +3655,8 @@ void Parser::recursiveCollectPID(int parent_pid, List <ProcessInfo> *list_proces
 
 enum MenusInPrefetchingCode { LIST_PROCESSES = 1, SEARCH_PID, SEARCH_PROCESSNAME, SET_TARGET, SHOW_TARGET_PROCESSES,WRITE_PREFETCHING_CODES, EXIT};
 
-#define DEBUG_generatePrefetchingCodes 1
-void Parser::generatePrefetchingCodes( List <ProcessInfo> * list_process)
+void Parser::showMenu()
 {
-	Node <ProcessInfo> *target_process = NULL;
-	List <ProcessInfo> *target_processes = new List <ProcessInfo> ();
-
-print_menu:
 	cout << endl << "select a target process" << endl;
 	cout << LIST_PROCESSES <<". to list all the process info" << endl;
 	cout << SEARCH_PID << ". search the process with pid" << endl;
@@ -3670,82 +3665,122 @@ print_menu:
 	cout << SHOW_TARGET_PROCESSES << ". print out the processes in the target list" << endl;
 	cout << WRITE_PREFETCHING_CODES <<". write a prefetching code" << endl;
 	cout << EXIT <<". return to the previous" << endl;
+	cout << ": ";
+}
 
-//	cout << "1. search with pid" << endl;
-//	cout << "2. search with process name" << endl;
-//	cout << "3. select pid ranges (from, to), to excluded" << endl;
-//	cout << "9. back to the above menu" << endl;
+void Parser::showProcesses(List <ProcessInfo> * list_process)
+{
+	Node<ProcessInfo> *p_iter = list_process->getHead();
+	while (p_iter)
+	{
+		cout << p_iter->entry->getProcessName() << "/" << p_iter->entry->getProcessId() << endl;
+		p_iter = p_iter->next;
+	}
+}
+
+void Parser::searchPID(List <ProcessInfo> * list_process)
+{
+	int pid = 0;
+	Node<ProcessInfo> *target_process = NULL;
+
+	cout << "pid to search: ";
+	cin >> pid;
+
+	if (list_process->searchNodeWithKey(pid, &target_process) == RET_SNWK_NOT_FOUND)
+		cout << "process [" << pid << "] isn't found" << endl;
+	else
+		cout << "the process exist" << endl;
+}
+
+/*
+@return
+Node <ProcessInfo> *target_process = NULL
+*/
+List <ProcessInfo> *Parser::setPIDtoPrefetch(List <ProcessInfo> * list_process)
+{
+	Node <ProcessInfo> *target_process = NULL;
+	List <ProcessInfo> *target_processes = new List <ProcessInfo> ();
+
+	cout << "pid: ";
+	int pid = 0;
+	cin >> pid;
+	cout << endl;
+
+	list_process->searchNodeWithKey(pid, &target_process);
+	if (target_process == NULL)
+	{
+		cout << "no process of the pid" << endl;
+		return target_processes;
+	}
+	cout << "target_process name: " << target_process->entry->getProcessName() << endl;
+	cout << "target_process pid: " << target_process->entry->getProcessId() << endl;
+	target_processes->copy_and_push_back(target_process);
+
+	cout << endl;
+	cout << "1. target process only" << endl;
+	cout << "2. include all child processes" << endl;
 	cout << ": ";
 
-	int pid = 0;	
-	int mode = 0; 	
+	int option = 0;
+	cin >> option;
+	cout << endl;
+
+	switch (option)
+	{
+	// assuming that pid is a unique key
+	case 1:
+		cout << "not implemented well" << endl;
+		break;
+	case 2:
+#if DEBUG_generatePrefetchingCodes
+		cout << "process list's size: #" << process_list->getSize() << endl;
+#endif
+		process_list->printList();
+		recursiveCollectPID(pid, process_list, target_processes);
+		cout << "the number of all the process: #" << target_processes->getSize() << endl;
+		break;
+	}
+	return target_processes;
+}
+
+void Parser::showTargetProcesses(List<ProcessInfo> *target_processes)
+{
+	cout << "show the list in the target processes" << endl;
+	Node<ProcessInfo> *p_iter = target_processes->getHead();
+	while (p_iter)
+	{
+		cout << p_iter->entry->getProcessName() << "/" << p_iter->entry->getProcessId() << endl;
+		p_iter = p_iter->next;
+	}
+}
+#define DEBUG_generatePrefetchingCodes 1
+void Parser::commandWithProcessList( List <ProcessInfo> * list_process)
+{
+print_menu:
+	showMenu();
+
+	int mode = (int)EXIT; 	
 	cin >> mode;
 	cout << endl;
+
+	List <ProcessInfo> *target_processes = NULL;
 
 	switch (mode){
 		case LIST_PROCESSES:
 		{
-			Node <ProcessInfo> *p_iter = list_process->getHead();
-			while(p_iter) {
-				cout << p_iter->entry->getProcessName() << "/" << p_iter->entry->getProcessId() << endl;
-				p_iter = p_iter->next;
-			}
+			showProcesses(list_process);
 			goto print_menu;
 		}
 
 		case SEARCH_PID:
 		{
-			cout << "pid to search: ";
-			cin >> pid;
-
-			if (list_process->searchNodeWithKey(pid, &target_process) == RET_SNWK_NOT_FOUND)
-				cout << "process [" << pid << "] isn't found" << endl;
-			else
-				cout << "the process exist" << endl;
-
+			searchPID(list_process);
 			goto print_menu;
 		}
 
 		case SET_TARGET:
 		{
-			cout << "pid: ";
-			cin >> pid;
-			cout << endl;
-
-			list_process->searchNodeWithKey(pid, &target_process);
-			if(target_process == NULL) {
-				cout << "no process of the pid" << endl;
-				goto print_menu;
-			}
-			cout << "target_process name: " << target_process->entry->getProcessName() << endl;
-			cout << "target_process pid: " << target_process->entry->getProcessId() << endl;
-			target_processes->copy_and_push_back(target_process);
-
-			cout << endl;
-			cout << "1. target process only" << endl;
-			cout << "2. include all child processes" << endl;
-			cout << ": ";
-
-			int option = 0;
-			cin >> option;
-			cout << endl;
-
-			switch (option){
-				// assuming that pid is a unique key
-				case 1:
-					cout << "not implemented well" << endl;
-					break;
-				case 2:
-				{
-#if DEBUG_generatePrefetchingCodes
-					cout << "process list's size: #" << process_list->getSize() << endl;
-#endif
-					process_list->printList();
-					recursiveCollectPID(pid, process_list, target_processes);
-					cout << "the number of all the process: #" << target_processes->getSize() << endl;
-					break;
-				}
-			}
+			target_processes = setPIDtoPrefetch(list_process);
 			goto print_menu;
 		}
 		case SEARCH_PROCESSNAME:
@@ -3768,13 +3803,7 @@ print_menu:
 		}
 		case SHOW_TARGET_PROCESSES:
 		{
-			cout << "show the list in the target processes" << endl;
-			Node <ProcessInfo> *p_iter = target_processes->getHead();
-			while(p_iter)
-			{
-				cout << p_iter->entry->getProcessName() << "/" << p_iter->entry->getProcessId() << endl;
-				p_iter = p_iter->next;
-			}
+			showTargetProcesses(target_processes);
 			goto print_menu;
 		}
 		case WRITE_PREFETCHING_CODES:

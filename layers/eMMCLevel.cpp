@@ -8,6 +8,36 @@
 
 #include "eMMCLevel.h"
 
+eMMCInfo::eMMCInfo(): StartFinishTimeInfo()
+{
+	init();
+}
+
+/**
+ @exception
+ no need to free the memory for each pointer such as
+ ParseEntry *eMMC_start_request, *eMMC_request_done;
+ BlockInfo *MappedBlockInfo;
+ */
+eMMCInfo::eMMCInfo(Node <ParseEntry> * _a, Node <ParseEntry> * _b): StartFinishTimeInfo (_a, _b)
+{
+	init();
+
+	MappedBlockInfo = new List <BlockInfo>();
+}
+
+void eMMCInfo::init()
+{
+	MappedBlockInfo = NULL;
+
+	StartAddress = BlockSz = CntBlocks = 0;
+	CMD = -1;
+}
+
+eMMCInfo::~eMMCInfo()
+{
+}
+
 List <BlockInfo> *eMMCInfo::getMappedBlockInfo()
 {
 	return MappedBlockInfo;

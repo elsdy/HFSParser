@@ -300,7 +300,7 @@ void Parser::showParsingResult()
 	cout << "Log Data Period: " << ParseList->getTail()->entry->getTimeStamp() - ParseList->getHead()->entry->getTimeStamp() << " (" << ParseList->getHead()->entry->getTimeStamp() << "~" << ParseList->getTail()->entry->getTimeStamp() << ")" << endl;
 	
 	cout << "Total Line in the Log: " << TotalLogLine << endl;
-	
+
 	// SYS IO EVENT SUMMARY
 	cout << endl << sm_idx++ << ". SYS IO EVENT SUMMARY" << endl;
 	cout << "CntTotalFileIo: " << CntTotalFileIo << endl;
@@ -3454,8 +3454,8 @@ void Parser::parseLog()
 
 	/// ParseEntry arrangement in a view of Process
 	process_list = new List <ProcessInfo> ();
-	groupProcessParseList( process_list );
-	fillProcessName( process_list );
+    groupProcessParseList( process_list );
+    fillProcessName( process_list );
 
 	string conf_file = "configuration/IO_build_rule.input";
 	loadIORule(conf_file);
@@ -3517,8 +3517,8 @@ void Parser::genPrefetchingCode()
 {
 	cout << "generating prefetch codes" << endl;
 
-	genParentChildTree();
-	commandWithProcessList(process_list);
+    genParentChildTree();
+    menuWithProcessList(process_list);
 }
 
 List <ProcessInfo> * Parser::searchProcessesWithName(List <ProcessInfo> *p_list, string pname, List <ProcessInfo> *t_list)
@@ -3626,47 +3626,59 @@ Node <ParseEntry> * Parser::searchParseEntrywithTimeStamp( List <ParseEntry> *pa
 	return iter;
 }
 
-// iter_pare is iterator
-// multimap is the list which can has the same key and multi value. e.g. (1,3), (1,4)
 #define DEBUG_recursiveCollectPID 0
+/**
+1. compare with the values of parent pid with and of child pid
+
+- if they are same, done
+- else if parent pid and child pid are different, then queue the process in the queue searched
+
+2. recursively call self with iter->second (might be child pid)
+- the same searching will be done with different pid (child)
+
+ @param parent_pid the first process searching started from
+ @param list_process searching is doing in the list_process
+ @param target_processes processes searched as a result go into this list (rw)
+ */
 void Parser::recursiveCollectPID(int parent_pid, List <ProcessInfo> *list_process, List <ProcessInfo> *target_processes )
 {
 	Node <ProcessInfo> *target_process = NULL;
-
-	pair< multimap<int,int>::iterator, multimap<int, int>::iterator > iter_pair;
-	iter_pair = pidtree.equal_range( parent_pid );
+    
+    // find target process with pid (no exception)
+    list_process->searchNodeWithKey(parent_pid, &target_process);
+    if(target_process  == NULL)
+        assert(0);
+    
+    // insert a found target process into the list
+    target_processes->copy_and_push_back(target_process);
+    
+    // iterate table
+    // if find a entry with parent_pid in iter_pair.first
+    // then call recursively with the new parent_pid (iter_pair.second)
+    
+    multimap<int,int>::iterator iter;
+    for ( iter = )
+    {
+        if( )
+        {
+            recursiveCollectPID(iter->second, list_process, target_processes);
+        }
+    }
 
 	// no results
 	if( iter_pair.first == iter_pair.second ) {
 		return;
 	} else { // results exits
-		multimap<int,int>::iterator iter;
+		
 		for( iter = iter_pair.first ; iter != iter_pair.second ; iter++)
 		{
-			cout << "parent pid: " << parent_pid << ", child pid: " << iter->second << endl;
-			if(list_process->searchNodeWithKey(iter->second, &target_process) == RET_SNWK_FOUND)
-			{
-				target_processes->copy_and_push_back(target_process);
-			}
+			
 			recursiveCollectPID(iter->second, list_process, target_processes);
 		}
 	}
 }
 
-enum MenusInPrefetchingCode { LIST_PROCESSES = 1, SEARCH_PID, SEARCH_PROCESSNAME, SET_TARGET, SHOW_TARGET_PROCESSES,WRITE_PREFETCHING_CODES, EXIT};
 
-void Parser::showMenu()
-{
-	cout << endl << "select a target process" << endl;
-	cout << LIST_PROCESSES <<". to list all the process info" << endl;
-	cout << SEARCH_PID << ". search the process with pid" << endl;
-	cout << SEARCH_PROCESSNAME << ". search the process with process name" << endl;
-	cout << SET_TARGET <<". set target with pid" << endl;
-	cout << SHOW_TARGET_PROCESSES << ". print out the processes in the target list" << endl;
-	cout << WRITE_PREFETCHING_CODES <<". write a prefetching code" << endl;
-	cout << EXIT <<". return to the previous" << endl;
-	cout << ": ";
-}
 
 void Parser::showProcesses(List <ProcessInfo> * list_process)
 {
@@ -3677,6 +3689,8 @@ void Parser::showProcesses(List <ProcessInfo> * list_process)
 		p_iter = p_iter->next;
 	}
 }
+
+
 
 void Parser::searchPID(List <ProcessInfo> * list_process)
 {
@@ -3692,11 +3706,23 @@ void Parser::searchPID(List <ProcessInfo> * list_process)
 		cout << "the process exist" << endl;
 }
 
-/*
-@return
-Node <ProcessInfo> *target_process = NULL
+/**
+1. input pid
+
+2. search the process having pid in the list_process
+
+3. select a mode for generating prefetching code
+	- target process only
+	- include all child processes
+
+4. write a prefetching code. 
+
+@brief set pid of process for a writing prefetching code
+@param list_process List <ProcessInfo> * list_process
+@return Node <ProcessInfo> * target_processes
 */
-List <ProcessInfo> *Parser::setPIDtoPrefetch(List <ProcessInfo> * list_process)
+#define DEBUG_setPIDtoPrefetch 1
+List <ProcessInfo> *Parser::setPIDtoPrefetch( List <ProcessInfo> * list_process )
 {
 	Node <ProcessInfo> *target_process = NULL;
 	List <ProcessInfo> *target_processes = new List <ProcessInfo> ();
@@ -3717,29 +3743,33 @@ List <ProcessInfo> *Parser::setPIDtoPrefetch(List <ProcessInfo> * list_process)
 	target_processes->copy_and_push_back(target_process);
 
 	cout << endl;
-	cout << "1. target process only" << endl;
-	cout << "2. include all child processes" << endl;
+	cout << "1. target process" << endl;
+	cout << "2. target process + all children" << endl;
 	cout << ": ";
 
 	int option = 0;
 	cin >> option;
 	cout << endl;
 
+#define TARGET_PROCESS_ONLY 1 
+#define INCLUDE_CHILD_PRCESSES 2
 	switch (option)
 	{
 	// assuming that pid is a unique key
-	case 1:
-		cout << "not implemented well" << endl;
+	case TARGET_PROCESS_ONLY:
+		cout << "not implemented yet" << endl;
 		break;
-	case 2:
-#if DEBUG_generatePrefetchingCodes
+	case INCLUDE_CHILD_PRCESSES:
 		cout << "process list's size: #" << process_list->getSize() << endl;
-#endif
-		process_list->printList();
+            
+		// process_list->printList();
 		recursiveCollectPID(pid, process_list, target_processes);
 		cout << "the number of all the process: #" << target_processes->getSize() << endl;
 		break;
 	}
+#if DEBUG_setPIDtoPrefetch
+    target_processes->printList();
+#endif
 	return target_processes;
 }
 
@@ -3747,78 +3777,129 @@ void Parser::showTargetProcesses(List<ProcessInfo> *target_processes)
 {
 	cout << "show the list in the target processes" << endl;
 	Node<ProcessInfo> *p_iter = target_processes->getHead();
+        
 	while (p_iter)
 	{
 		cout << p_iter->entry->getProcessName() << "/" << p_iter->entry->getProcessId() << endl;
 		p_iter = p_iter->next;
 	}
 }
-#define DEBUG_generatePrefetchingCodes 1
-void Parser::commandWithProcessList( List <ProcessInfo> * list_process)
+
+void Parser::searchProcessAndPrintProcessInfo(string process_name)
 {
-print_menu:
-	showMenu();
-
-	int mode = (int)EXIT; 	
-	cin >> mode;
-	cout << endl;
-
-	List <ProcessInfo> *target_processes = NULL;
-
-	switch (mode){
-		case LIST_PROCESSES:
+	Node <ProcessInfo> *p_iter = process_list->getHead();
+	while(p_iter)
+	{
+		if(p_iter->entry->getProcessName() == process_name)
 		{
-			showProcesses(list_process);
-			goto print_menu;
+			cout << "matched process name: " << p_iter->entry->getProcessName() << endl;
+			cout << "matched process id: " << p_iter->entry->getProcessId() << endl;
+			cout << endl;
 		}
-
-		case SEARCH_PID:
-		{
-			searchPID(list_process);
-			goto print_menu;
-		}
-
-		case SET_TARGET:
-		{
-			target_processes = setPIDtoPrefetch(list_process);
-			goto print_menu;
-		}
-		case SEARCH_PROCESSNAME:
-		{
-			string process_name;
-			cout << "process name to search: ";
-			cin >> process_name;
-
-			Node <ProcessInfo> *p_iter = process_list->getHead();
-			while(p_iter)
-			{
-				if(p_iter->entry->getProcessName() == process_name)
-				{
-					cout << "matched process name: " << p_iter->entry->getProcessName() << endl;
-					cout << "matched process id: " << p_iter->entry->getProcessId() << endl;
-					cout << endl;
-				}
-				p_iter = p_iter->next;
-			}
-		}
-		case SHOW_TARGET_PROCESSES:
-		{
-			showTargetProcesses(target_processes);
-			goto print_menu;
-		}
-		case WRITE_PREFETCHING_CODES:
-		{
-			createPrefetcherCode(PREFECHING_CODE, target_processes);
-			goto print_menu;
-		}
-		case EXIT:
-			break;
+		p_iter = p_iter->next;
 	}
-	// which statistics do you want to see?
 }
 
-// output the code parts
 
+enum MenusInPrefetchingCode {
+    LIST_PROCESSES = 1,         // 1
+    SEARCH_PID,                 // 2
+    SEARCH_PROCESSNAME,         // 3
+    SET_TARGET,                 // 4
+    SHOW_TARGET_PROCESSES,      // 5
+    WRITE_PREFETCHING_CODES,    // 6
+    EXIT                        // 7
+};
+
+
+
+#define DEBUG_generatePrefetchingCodes 1
+void Parser::menuWithProcessList( List <ProcessInfo> * list_process)
+{
+    int mode = (int)EXIT;
+    
+	do
+	{
+        cout << endl << "select a target process" << endl;
+        cout << LIST_PROCESSES << ". to list all the process info" << endl;
+        cout << SEARCH_PID << ". search the process with pid" << endl;
+        cout << SEARCH_PROCESSNAME << ". search the process with process name" << endl;
+        cout << SET_TARGET << ". set target with pid" << endl;
+        cout << SHOW_TARGET_PROCESSES << ". print out the processes in the target list" << endl;
+        cout << WRITE_PREFETCHING_CODES << ". write a prefetching code" << endl;
+        cout << EXIT << ". quit" << endl;
+        cout << ": ";
+        
+        cin >> mode;
+        cout << endl;
+        
+        List <ProcessInfo> *target_processes = NULL;
+        
+        switch (mode)
+        {
+            case LIST_PROCESSES:
+            {
+                showProcesses(list_process);
+                break;
+            }
+                
+            case SEARCH_PID:
+            {
+                searchPID(list_process);
+                break;
+            }
+                
+            case SET_TARGET:
+            {                
+                target_processes = setPIDtoPrefetch(list_process);
+                break;
+            }
+            case SEARCH_PROCESSNAME:
+            {
+                string process_name;
+                cout << "process name to search: ";
+                cin >> process_name;
+                searchProcessAndPrintProcessInfo(process_name);
+                
+                break;
+            }
+            case SHOW_TARGET_PROCESSES:
+            {
+            	if (target_processes == NULL)
+            		target_processes = setPIDtoPrefetch(list_process);
+
+                showTargetProcesses(target_processes);
+                break;
+            }
+            case WRITE_PREFETCHING_CODES:
+            {
+                if (target_processes == NULL)
+                {
+                    cout << "target processes is NUL. you should input pid to generate prefetch code" << endl;
+                    target_processes = setPIDtoPrefetch(list_process);
+                }
+                
+                createPrefetcherCode(PREFECHING_CODE, target_processes);
+                break;
+            }
+                
+            case EXIT:
+            {
+                break;
+            }
+                
+            default:
+            {
+                cout << "input correct menu id" << endl;
+                break;
+            }
+        }
+	} while (mode != EXIT);
+}
+
+
+
+// output the code parts
 void Parser::openAndreadWholeFile(ofstream &prefetcher_code, string fd_name, size_t fd_count, string filename, Node <ParseEntry> *log_iter, int use_posix_fadvise)
 {
 		prefetcher_code << "\tint " << fd_name + to_string(fd_count) <<
@@ -3881,6 +3962,7 @@ void Parser::generatePrefetcherCodesWithOpenFiles(List <ProcessInfo> *target_pro
 	cout << "1. posix_fadvise()" << endl;
 	cout << "2. read() (no need of lseek)" << endl;
 	cout << ": ";
+    
 	cin >> use_posix_fadvise;
 	cout << endl;
 
@@ -3941,17 +4023,6 @@ void Parser::generatePrefetcherCodesWithOpenFiles(List <ProcessInfo> *target_pro
 					string filename_replace("$1"), pos_replace("$3"), size_replace("$2");
 					string  filename = regex_replace(log, systemcall_regex, filename_replace, regex_constants::format_no_copy);
 
-					size_t found = filename.find('/');
-
-					if (found == string::npos) 
-						goto inc_iter;
-					else if(filename == "")
-						break;
-					else
-					{
-						filename = correctFilePathName(filename);
-					}
-
 					if (filename == "")
 					{
 						goto inc_iter;
@@ -3975,16 +4046,6 @@ void Parser::generatePrefetcherCodesWithOpenFiles(List <ProcessInfo> *target_pro
 					string filename_replace("$1"), pgoff_replace("$2"), pgsize_replace("$3");
 					string  filename = regex_replace(log, mmap_regex, filename_replace, regex_constants::format_no_copy);
 
-					size_t found = filename.find('/');
-					if (found == string::npos) 
-						break;
-					else if(filename == "") 	
-						break;
-					else
-					{
-						filename = correctFilePathName(filename);
-					}
-
 					if (filename == "")
 					{
 						goto inc_iter;
@@ -3999,6 +4060,12 @@ void Parser::generatePrefetcherCodesWithOpenFiles(List <ProcessInfo> *target_pro
 
 					break;
 				}
+                case TLB:
+                {
+                    writePrefetchingCodeWithOpenedFile(prefetcher_code, "error", log_iter, file_table, use_posix_fadvise);
+                    break;
+                }
+				
 				case FORK:
 				{
 					break;
@@ -4089,8 +4156,8 @@ void Parser::createPrefetcherCode(string FileName, List <ProcessInfo> *target_pr
 
 	switch (mode) {
 		case ACCESSEDFILE:
-			generatePrefetcherCodeWithAccessedFile(target_processes, file_table);
-			break;
+            generatePrefetcherCodeWithAccessedFile(target_processes, file_table);
+            break;
 
 		case OPENFILE:
 			generatePrefetcherCodesWithOpenFiles(target_processes, file_table);
@@ -4195,193 +4262,151 @@ void Parser::generatePrefetcherCodeWithAccessedFile(List <ProcessInfo> *target_p
 iotype Parser::checkLogType(string iolog)
 {
 	size_t found = string::npos;
+    
+#if PREFETCH_TLB
+    found = iolog.find("filename=");
+    if (found != string::npos)
+        return TLB;
+#endif
 
-	found = iolog.find("[HMF]");
-	if (found != string::npos)
 #if PREFETCH_HMF
+    found = iolog.find("[HMF]");
+    if (found != string::npos)
 		return HMF;
-#else
-	return PASS;
 #endif
 
-	found = iolog.find("pgsize=");
-	if (found != string::npos)
 #if PREFETCH_MMAP
+    found = iolog.find("pgsize=");
+    if (found != string::npos)
 		return MMAP;
-#else
-	return PASS;
 #endif
 
-	found = iolog.find("pos=");
-	if (found != string::npos)
 #if PREFETCH_VFSCALL
+    found = iolog.find("pos=");
+    if (found != string::npos)
 		return VFSCALL;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("openat=");
-	if (found != string::npos)
 #if PREFETCH_OPENAT
+    found = iolog.find("openat=");
+    if (found != string::npos)
 		return OPENAT;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("open=");
-	if (found != string::npos)
 #if PREFETCH_OPEN
+    found = iolog.find("open=");
+    if (found != string::npos)
 		return OPEN;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("fstateat=");					   
-	if (found != string::npos) {
-		found = iolog.find("flag=256");
-		if(found != string::npos)
+    
 #if PREFETCH_LSTAT_STAT
+    found = iolog.find("fstateat=");
+    if (found != string::npos) {
+        found = iolog.find("flag=256");
+        if(found != string::npos)
 			return LSTAT;
-#else
-			return PASS;
-#endif
-		else
-#if PREFETCH_LSTAT_STAT
-			return STAT;
-#else
-			return PASS;
-#endif	
 	}
+#endif
 
-	found = iolog.find("child_pid=");
-	if(found != string::npos)
 #if PREFETCH_FORK
+    found = iolog.find("child_pid=");
+    if(found != string::npos)
 		return FORK;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("getdents=");
-	if(found != string::npos)
 #if PREFETCH_GETDENTS
+    found = iolog.find("getdents=");
+    if(found != string::npos)
 		return GETDENTS;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("access=");
-	if(found != string::npos)
 #if PREFETCH_ACCESS
+    found = iolog.find("access=");
+    if(found != string::npos)
 		return ACCESS;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("faccessat=");
-	if(found != string::npos)
+
 #if PREFETCH_FACCESSAT
+    found = iolog.find("faccessat=");
+    if(found != string::npos)
 		return FACCESSAT;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("execveat=");
-	if(found != string::npos)
 #if PREFETCH_EXECVEAT
+    found = iolog.find("execveat=");
+    if(found != string::npos)
 		return EXECVEAT;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("execve=");
-	if(found != string::npos)
 #if PREFETCH_EXECVE
+    found = iolog.find("execve=");
+    if(found != string::npos)
 		return EXECVE;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("creat=");
-	if(found != string::npos)
 #if PREFETCH_CREAT
+    found = iolog.find("creat=");
+    if(found != string::npos)
 		return CREAT;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("readlink=");
-	if(found != string::npos)
 #if PREFETCH_READLINK
+    found = iolog.find("readlink=");
+    if(found != string::npos)
 		return READLINK;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("fstatfs64=");
-	if(found != string::npos)
 #if PREFETCH_FSTATFS64
+    found = iolog.find("fstatfs64=");
+    if(found != string::npos)
 		return FSTATFS64;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("statfs64=");
-	if(found != string::npos)
 #if PREFETCH_STATFS64
+    found = iolog.find("statfs64=");
+    if(found != string::npos)
 		return STATFS64;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("fstatfs=");
-	if(found != string::npos)
 #if PREFETCH_FSTATFS
+    found = iolog.find("fstatfs=");
+    if(found != string::npos)
 		return FSTATFS;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("statfs=");
-	if(found != string::npos)
 #if PREFETCH_STATFS
+    found = iolog.find("statfs=");
+    if(found != string::npos)
 		return STATFS;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("trunfile=");
-	if(found != string::npos)
 #if PREFETCH_TRUNCATE
+    found = iolog.find("trunfile=");
+    if(found != string::npos)
 		return TRUNCATE;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("fadvise64_64=");
-	if(found != string::npos)
 #if PREFETCH_FADVISE64_64
+    found = iolog.find("fadvise64_64=");
+    if(found != string::npos)
 		return FADVISE64_64;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("fadvise64=");
-	if(found != string::npos)
 #if PREFETCH_FADVISE64
+    found = iolog.find("fadvise64=");
+    if(found != string::npos)
 		return FADVISE64;
-#else
-		return PASS;
 #endif
 
-	found = iolog.find("vfs_getattr=");
-	if(found != string::npos)
 #if PREFETCH_FSTAT
+    found = iolog.find("vfs_getattr=");
+    if(found != string::npos)
 		return FSTAT;
-#else
-		return PASS;
 #endif
 
-	return NONE;
+	return PASS;
 }
 
 // int fd2 = open ("/usr/share/X11/locale/locale.alias", O_RDONLY); // system call, LN-515
@@ -4441,16 +4466,6 @@ void Parser::prefetchAllFileAccessed(List <ProcessInfo> *target_processes, map <
 					string filename_replace("$1"), pos_replace("$3"), size_replace("$2");
 					string  filename = regex_replace(iolog, systemcall_regex, filename_replace, regex_constants::format_no_copy);
 
-					size_t found = filename.find('/');
-
-					if (found == string::npos) 
-						break;
-					else if(filename == "")
-						break;
-					else
-					{
-						filename = correctFilePathName(filename);
-					}
 
 					////
 					// size
@@ -4467,7 +4482,7 @@ void Parser::prefetchAllFileAccessed(List <ProcessInfo> *target_processes, map <
 
 #if DEBUG_printPrefetcherCodes
 					cout << "filename: " << filename << endl;
-					cout << "size: " << size << endl;
+
 					cout << "pos: " << pos << endl;
 #endif
 					////
@@ -4490,19 +4505,34 @@ void Parser::prefetchAllFileAccessed(List <ProcessInfo> *target_processes, map <
 					regex mmap_regex("file=([a-zA-Z0-9.-_:/]*) pgoff=([0-9]+) pgsize=([0-9]+)"); // file=cat, pgoff=11, pgsize=32
 					string filename_replace("$1"), pgoff_replace("$2"), pgsize_replace("$3");
 					string  filename = regex_replace(iolog, mmap_regex, filename_replace, regex_constants::format_no_copy);
-
-					size_t found = filename.find('/');
-					if (found == string::npos) 
-						break;
-					else if(filename == "") 	
-						break;
-					else
-					{
-						filename = correctFilePathName(filename);
-					}
+                    
 
 					string  pgoff = regex_replace(iolog, mmap_regex, pgoff_replace, regex_constants::format_no_copy);
 					string  pgsize = regex_replace(iolog, mmap_regex, pgsize_replace, regex_constants::format_no_copy);
+
+					fd_iter = file_table.find(filename);
+					if(file_table.end() == fd_iter) { // no search results, add file_table and write "open"
+                    	fd_count = file_table.size();
+						file_table.insert(make_pair(filename, fd_name + to_string(fd_count)));
+						//	int fd1 = open("/lib/x86_64-linux-gnu/ld-2.19.so", O_RDONLY);
+						
+						openAndreadWholeFile(prefetcher_code, fd_name, fd_count, filename, log_iter, 0);
+					}
+
+					break;
+				}
+
+				case TLB:
+				{
+					regex mmap_regex("filename=([a-zA-Z0-9.-_:/]*) pg_idx=([0-9]+)"); // file=cat, pgoff=11, pgsize=32
+					string filename_replace("$1"), pgoff_replace("$2");
+
+                    string  filename = regex_replace(iolog, mmap_regex, filename_replace, regex_constants::format_no_copy);
+					string  pgoff = regex_replace(iolog, mmap_regex, pgoff_replace, regex_constants::format_no_copy);
+					string  pgsize = "1";
+                    
+                    if (filename == "")
+                        break;
 
 					fd_iter = file_table.find(filename);
 					if(file_table.end() == fd_iter) { // no search results, add file_table and write "open"
@@ -4638,7 +4668,13 @@ void Parser::prefetchOnlyAccessed(List <ProcessInfo> *target_processes, map <str
 					assert(1);
 					break;
 				}
-
+                    
+                case TLB:
+                {
+                    assert(1);
+                    break;
+                }
+                    
 				case FADVISE64_64:
 				case FADVISE64:
 				case VFSCALL:

@@ -29,29 +29,30 @@
 #pragma mark - check for including the target functions with the name
 
 // 로그에서 빼고 더하고를 결정
-#define PREFETCH_MMAP	 			1
-#define PREFETCH_VFSCALL			1
-#define PREFETCH_OPENAT 			1
-#define PREFETCH_OPEN 				1
-#define PREFETCH_LSTAT_STAT			1
-#define PREFETCH_FORK 				1
-#define PREFETCH_GETDENTS 			1
-#define PREFETCH_ACCESS 			1
-#define PREFETCH_FACCESSAT 			1
-#define PREFETCH_EXECVEAT 			1
-#define PREFETCH_EXECVE 			1
-#define PREFETCH_CREAT 				1
-#define PREFETCH_READLINK 			1
-#define PREFETCH_PREFETCH_FSTATFS64	1
-#define PREFETCH_PREFETCH_STATFS64 	1
-#define PREFETCH_FSTATFS 			1
-#define PREFETCH_STATFS 			1
-#define PREFETCH_TRUNCATE 			1
-#define PREFETCH_FADVISE64_64		1
-#define PREFETCH_FSTATFS 			1
-#define PREFETCH_FADVISE64 			1
-#define PREFETCH_FSTAT 				1
+// #define PREFETCH_MMAP	 			1
+// #define PREFETCH_VFSCALL			1
+// #define PREFETCH_OPENAT 			1
+// #define PREFETCH_OPEN 				1
+// #define PREFETCH_LSTAT_STAT			1
+// #define PREFETCH_FORK 				1
+// #define PREFETCH_GETDENTS 			1
+// #define PREFETCH_ACCESS 			1
+// #define PREFETCH_FACCESSAT 			1
+// #define PREFETCH_EXECVEAT 			1
+// #define PREFETCH_EXECVE 			1
+// #define PREFETCH_CREAT 				1
+// #define PREFETCH_READLINK 			1
+// #define PREFETCH_PREFETCH_FSTATFS64	1
+// #define PREFETCH_PREFETCH_STATFS64 	1
+// #define PREFETCH_FSTATFS 			1
+// #define PREFETCH_STATFS 			1
+// #define PREFETCH_TRUNCATE 			1
+// #define PREFETCH_FADVISE64_64		1
+// #define PREFETCH_FSTATFS 			1
+// #define PREFETCH_FADVISE64 			1
+// #define PREFETCH_FSTAT 				1
+// #define PREFETCH_HMF                1
 
-#define PREFETCH_HMF                1
+#define PREFETCH_TLB                1 // 20180221 for the new log
 
 #endif /* prefetcher_configuration_h */

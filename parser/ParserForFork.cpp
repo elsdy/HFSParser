@@ -49,7 +49,10 @@ void genParentChildTree()
 	ifstream input_file;
 
 	// file open
-	input_file.open("input/fork.log", ios::in);
+    
+    // to do: input/fork.log -> #define or use
+    // string full_input_file_path = InputFileDirectory + _file_to_open;
+	input_file.open("fork.log", ios::in);
 	if (!input_file.is_open()) {
 		assert(0);
 	}

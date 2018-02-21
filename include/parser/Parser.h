@@ -50,6 +50,7 @@
 using namespace std;
 
 enum iotype {
+    TLB,
 	MMAP,
 	HMF,
 	FADVISE64,
@@ -216,8 +217,8 @@ private:
 		
 		InputFileName = "";
 		OutputFileName = "";
-		InputFileDirectory = "input/";
-		OutputFileDirectory = "output/";
+		// InputFileDirectory = "input/";
+		// OutputFileDirectory = "output/";
 		
 		AnalysisStartTime = 0;
 		AnalysisFinishTime = 0;
@@ -275,15 +276,21 @@ public:
 		
 		InputFileName = _file_to_open;
 		
+        // assigned OutputFileName excluding "." from InputFileName
 		OutputFileName = InputFileName;
-		OutputFileName.erase(OutputFileName.find_last_of("."));
+        if(OutputFileName.find_last_of(".") != std::string::npos)		OutputFileName.erase(OutputFileName.find_last_of("."));
 		
 		ParseList = new List <ParseEntry>;
 		RuleList_SysIO = new List <Rule_SysIO>;
 
+		_file_to_open = "fault.log";
+
+
 #if MEASURE_PARSING_LOG
 		clock_t begin = clock();
+
 		input(_file_to_open);
+
 		clock_t end = clock();
 		double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 		cout << "time for parsing a log: " << elapsed_secs << endl;
@@ -986,7 +993,7 @@ public:
 	Node <ParseEntry> * searchParseEntrywithTimeStamp( List <ParseEntry> *parse_list, double tp);
 
 	void prefetchingMode( List <ProcessInfo> * p_list);
-	void commandWithProcessList( List <ProcessInfo> * list_process);
+	void menuWithProcessList( List <ProcessInfo> * list_process);
 
 	void createPrefetcherCode(string FileName, List <ProcessInfo> *target_processes);
 	void writePrefetchCodeHeader();
@@ -1008,14 +1015,11 @@ public:
 
 	iotype checkLogType(string iolog);
 
-// 20170712
-	void showMenu();
 	void showProcesses(List <ProcessInfo> * list_process);
 	void searchPID(List <ProcessInfo> * list_process);
 	List <ProcessInfo> *setPIDtoPrefetch(List <ProcessInfo> * list_process);
 	void showTargetProcesses(List<ProcessInfo> *target_processes);
-
-
+	void searchProcessAndPrintProcessInfo(string process_name);
 };
 
 #endif /* PARSER_H_ */

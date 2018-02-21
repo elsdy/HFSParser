@@ -48,22 +48,24 @@ using namespace std;
 
 #include <stdio.h>
 
-void genPreferchingCode(string _input_file)
+void extractSchedInfo(char *log_name)
 {
-	Parser parser(_input_file);
-
-	//	analyis is prepared well and now result will be generated
-	parser.genPrefetchingCode();
+    char buf[100];
+    snprintf(buf, 100, "grep sched_process_fork %s > fork.log",log_name);
+	system(buf);
 }
 
-void genForkRelationship()
+void CleanUp()
 {
-	system("grep sched_process_fork input/vfs.log > input/fork.log");
+	system("rm fork.log");
+    system("rm fault.log");
 }
 
-void rmForkRelationship()
+void extractFaultInfo(char *log_name)
 {
-	system("rm input/fork.log");
+    char buf[100];
+    snprintf(buf, 100, "grep -v \"vfs\" -v %s | grep -v \"sched_process_fork\" > fault.log", log_name);
+    system(buf);
 }
 
 // 1. generate a file named "fork.log" which is extracted from the vfs.log" with a line "sched_process_fork"
@@ -74,11 +76,24 @@ void rmForkRelationship()
 
 int main(int argc, const char * argv[])
 {
+    // char filename[20];
+    // cout << "input file name: ";
+    // scanf("%s", filename);
+    
 	//	genParentChildTree();
 	//	printForkTree();
-	genForkRelationship();
-	genPreferchingCode(argv[1]);
-	rmForkRelationship();
+
+    char filename[20]="trace8";
+
+	extractSchedInfo(filename);
+    extractFaultInfo(filename);
+    cout << "Analyzing " << filename << " is done." << endl;
+    
+    //    analyis is prepared well and now result will be generated
+    Parser parser(filename);
+    parser.genPrefetchingCode();
+
+	// CleanUp();
 
 	//	testFileNamePath();
 

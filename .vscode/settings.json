@@ -4,6 +4,9 @@
         "__locale": "cpp",
         "algorithm": "cpp",
         "iosfwd": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "__functional_03": "cpp",
+        "functional": "cpp",
+        "map": "cpp"
     }
 }

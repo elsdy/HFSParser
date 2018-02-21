@@ -51,6 +51,7 @@ using namespace std;
 void extractSchedInfo(char *log_name)
 {
     char buf[100];
+    system("ls;cd input;ls");
     snprintf(buf, 100, "grep sched_process_fork %s > fork.log",log_name);
 	system(buf);
 }
@@ -80,10 +81,11 @@ int main(int argc, const char * argv[])
     // cout << "input file name: ";
     // scanf("%s", filename);
     
-	//	genParentChildTree();
-	//	printForkTree();
+//    genParentChildTree();
+//    printForkTree();
 
-    char filename[20]="trace8";
+    system("echo `pwd`");
+    char filename[]="input/Telegram.log";
 
 	extractSchedInfo(filename);
     extractFaultInfo(filename);
@@ -93,9 +95,9 @@ int main(int argc, const char * argv[])
     Parser parser(filename);
     parser.genPrefetchingCode();
 
-	// CleanUp();
+     CleanUp();
 
-	//	testFileNamePath();
+        testFileNamePath();
 
 	return 0;
 }

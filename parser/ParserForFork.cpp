@@ -44,7 +44,7 @@ multimap <int, int> pidtree;
 3. make a tree which have a relationship showing parent and child
 */
 #define DEBUG_buildForkTree 0
-void genParentChildTree()
+void genProcessTable()
 {
 	ifstream input_file;
 
@@ -133,6 +133,7 @@ void testFileNamePath()
 //		buildCorrectFilePath(str_filename);
 		}
 }
+
 
 
 void printForkTree()

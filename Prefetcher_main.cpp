@@ -80,8 +80,8 @@ int main(int argc, const char * argv[])
     // cout << "input file name: ";
     // scanf("%s", filename);
     
-	//	genParentChildTree();
-	//	printForkTree();
+        genParentChildTree();
+        printForkTree();
 
     char filename[20]="trace8";
 
@@ -93,9 +93,9 @@ int main(int argc, const char * argv[])
     Parser parser(filename);
     parser.genPrefetchingCode();
 
-	// CleanUp();
+     CleanUp();
 
-	//	testFileNamePath();
+        testFileNamePath();
 
 	return 0;
 }

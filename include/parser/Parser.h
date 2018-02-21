@@ -74,8 +74,7 @@ enum iotype {
 	FSTATFS, 
 	STATFS, 
 	TRUNCATE,
-	PASS,
-	NONE
+	PASS
 };
 
 class Parser
@@ -282,8 +281,6 @@ public:
 		
 		ParseList = new List <ParseEntry>;
 		RuleList_SysIO = new List <Rule_SysIO>;
-
-		_file_to_open = "fault.log";
 
 
 #if MEASURE_PARSING_LOG
@@ -995,19 +992,19 @@ public:
 	void prefetchingMode( List <ProcessInfo> * p_list);
 	void menuWithProcessList( List <ProcessInfo> * list_process);
 
-	void createPrefetcherCode(string FileName, List <ProcessInfo> *target_processes);
-	void writePrefetchCodeHeader();
-	void generatePrefetcherCodeWithAccessedFile(List <ProcessInfo> *target_processes, map <string, string> &file_table);
-	void writePrefetchCodeFooter(map <string, string> &file_table);
+	void write_prefetcher_code(string FileName, List <ProcessInfo> *target_processes);
+	void write_prefetch_code_header();
+	void generate_prefetching_code_with_accessedfile(List <ProcessInfo> *target_processes, map <string, string> &file_table);
+	void write_prefetching_code_footer(map <string, string> &file_table);
 
-	void recursiveCollectPID(int parent_pid, List <ProcessInfo> *list_process, List <ProcessInfo> *target_processes );
+	void setTargetProcessesWithPT(int parent_pid,List <ProcessInfo> *target_processes );
 	string correctFilePathName(string filename);
 
 	void generatePrefetcherCodesWithOpenFiles(List <ProcessInfo> *target_processes, map <string, string> &file_table);
 	void writePrefetchingCodeWithOpenedFile(ofstream &output, string filename, Node <ParseEntry> *log_iter, map <string, string> &file_table, int use_posix_fadvise);
 
-	void prefetchOnlyAccessed(List <ProcessInfo> *target_processes, map <string, string> &file_table);
-	void prefetchAllFileAccessed(List <ProcessInfo> *target_processes, map <string, string> &file_table);
+	void prefetch_AccessedParts_of_AccessedFiles(List <ProcessInfo> *target_processes, map <string, string> &file_table);
+	void prefetch_AllPart_of_AccessedFiles(List <ProcessInfo> *target_processes, map <string, string> &file_table);
 
 	void openAndreadWholeFile(ofstream &prefetcher_code, string fd_name, size_t fd_count, string file_name, Node <ParseEntry> *log_iter, int use_posix_fadvise);
 

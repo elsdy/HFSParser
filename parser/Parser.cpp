@@ -3517,7 +3517,7 @@ void Parser::genPrefetchingCode()
 {
 	cout << "generating prefetch codes" << endl;
 
-    genParentChildTree();
+    genProcessTable();
     menuWithProcessList(process_list);
 }
 
@@ -3637,45 +3637,36 @@ Node <ParseEntry> * Parser::searchParseEntrywithTimeStamp( List <ParseEntry> *pa
 - the same searching will be done with different pid (child)
 
  @param parent_pid the first process searching started from
- @param list_process searching is doing in the list_process
  @param target_processes processes searched as a result go into this list (rw)
  */
-void Parser::recursiveCollectPID(int parent_pid, List <ProcessInfo> *list_process, List <ProcessInfo> *target_processes )
+void Parser::setTargetProcessesWithPT(int parent_pid, List <ProcessInfo> *target_processes )
 {
+    
 	Node <ProcessInfo> *target_process = NULL;
     
-    // find target process with pid (no exception)
-    list_process->searchNodeWithKey(parent_pid, &target_process);
-    if(target_process  == NULL)
-        assert(0);
     
+    // find target process with pid (no exception)
+    process_list->searchNodeWithKey(parent_pid, &target_process);
+    if(target_process  == NULL)
+    {
+        cout << "process id(" << parent_pid << ") has no log" << endl;
+        return;
+    }
+   
     // insert a found target process into the list
     target_processes->copy_and_push_back(target_process);
+    
     
     // iterate table
     // if find a entry with parent_pid in iter_pair.first
     // then call recursively with the new parent_pid (iter_pair.second)
-    
-    multimap<int,int>::iterator iter;
-    for ( iter = )
+    //    multimap <int, int> pidtree; is being used
+    for (auto iter = pidtree.begin(); iter != pidtree.end(); iter++)
     {
-        if( )
-        {
-            recursiveCollectPID(iter->second, list_process, target_processes);
-        }
+        if((*iter).first == parent_pid)
+            setTargetProcessesWithPT(iter->second, target_processes);
     }
-
-	// no results
-	if( iter_pair.first == iter_pair.second ) {
-		return;
-	} else { // results exits
-		
-		for( iter = iter_pair.first ; iter != iter_pair.second ; iter++)
-		{
-			
-			recursiveCollectPID(iter->second, list_process, target_processes);
-		}
-	}
+    
 }
 
 
@@ -3721,55 +3712,78 @@ void Parser::searchPID(List <ProcessInfo> * list_process)
 @param list_process List <ProcessInfo> * list_process
 @return Node <ProcessInfo> * target_processes
 */
-#define DEBUG_setPIDtoPrefetch 1
+#define DEBUG_setPIDtoPrefetch 0
 List <ProcessInfo> *Parser::setPIDtoPrefetch( List <ProcessInfo> * list_process )
 {
+    
 	Node <ProcessInfo> *target_process = NULL;
 	List <ProcessInfo> *target_processes = new List <ProcessInfo> ();
 
+    
 	cout << "pid: ";
 	int pid = 0;
 	cin >> pid;
 	cout << endl;
 
-	list_process->searchNodeWithKey(pid, &target_process);
+    
+    // if the pid isn't in the log, then quit
+    list_process->searchNodeWithKey(pid, &target_process);
 	if (target_process == NULL)
 	{
 		cout << "no process of the pid" << endl;
 		return target_processes;
 	}
+    
+    
 	cout << "target_process name: " << target_process->entry->getProcessName() << endl;
 	cout << "target_process pid: " << target_process->entry->getProcessId() << endl;
-	target_processes->copy_and_push_back(target_process);
-
+    
+    
 	cout << endl;
 	cout << "1. target process" << endl;
 	cout << "2. target process + all children" << endl;
 	cout << ": ";
 
+    
 	int option = 0;
 	cin >> option;
 	cout << endl;
 
+    
 #define TARGET_PROCESS_ONLY 1 
 #define INCLUDE_CHILD_PRCESSES 2
 	switch (option)
 	{
-	// assuming that pid is a unique key
-	case TARGET_PROCESS_ONLY:
-		cout << "not implemented yet" << endl;
-		break;
-	case INCLUDE_CHILD_PRCESSES:
-		cout << "process list's size: #" << process_list->getSize() << endl;
+        
+        case TARGET_PROCESS_ONLY:
+            list_process->searchNodeWithKey(pid, &target_process);
+            if(target_process  == NULL)
+            {
+                cout << "process id(" << pid << ") has no log" << endl;
+                assert(0);
+            }
             
-		// process_list->printList();
-		recursiveCollectPID(pid, process_list, target_processes);
-		cout << "the number of all the process: #" << target_processes->getSize() << endl;
-		break;
-	}
+            // insert a found target process into the list
+            target_processes->copy_and_push_back(target_process);
+        break;
+            
+            
+        case INCLUDE_CHILD_PRCESSES:
+            cout << "process list's size: #" << process_list->getSize() << endl;
+            
+            // process_list->printList();
+            setTargetProcessesWithPT(pid, target_processes);
+            cout << "the number of all the process: #" << target_processes->getSize() << endl;
+        break;
+            
+    }
+    
+    
 #if DEBUG_setPIDtoPrefetch
     target_processes->printList();
 #endif
+    
+    
 	return target_processes;
 }
 
@@ -3808,7 +3822,8 @@ enum MenusInPrefetchingCode {
     SET_TARGET,                 // 4
     SHOW_TARGET_PROCESSES,      // 5
     WRITE_PREFETCHING_CODES,    // 6
-    EXIT                        // 7
+    MERGE_TWO_PREFETCH_CODES,   // 7
+    EXIT                        // 8
 };
 
 
@@ -3827,6 +3842,7 @@ void Parser::menuWithProcessList( List <ProcessInfo> * list_process)
         cout << SET_TARGET << ". set target with pid" << endl;
         cout << SHOW_TARGET_PROCESSES << ". print out the processes in the target list" << endl;
         cout << WRITE_PREFETCHING_CODES << ". write a prefetching code" << endl;
+        cout << MERGE_TWO_PREFETCH_CODES << ". merge two prefetch.c" << endl;
         cout << EXIT << ". quit" << endl;
         cout << ": ";
         
@@ -3879,7 +3895,7 @@ void Parser::menuWithProcessList( List <ProcessInfo> * list_process)
                     target_processes = setPIDtoPrefetch(list_process);
                 }
                 
-                createPrefetcherCode(PREFECHING_CODE, target_processes);
+                write_prefetcher_code(PREFECHING_CODE, target_processes);
                 break;
             }
                 
@@ -3982,11 +3998,6 @@ void Parser::generatePrefetcherCodesWithOpenFiles(List <ProcessInfo> *target_pro
 
 			switch(type)
 			{
-				case NONE:
-				{
-					assert(0);
-					break;
-				}
 				case PASS:
 				{
 					assert(1);
@@ -4138,38 +4149,25 @@ void Parser::generatePrefetcherCodesWithOpenFiles(List <ProcessInfo> *target_pro
 }
 
 enum prefetch_domain {ACCESSEDFILE=1, OPENFILE};
-void Parser::createPrefetcherCode(string FileName, List <ProcessInfo> *target_processes)
+void Parser::write_prefetcher_code(string FileName, List <ProcessInfo> *target_processes)
 {
-	map <string, string> file_table;
+	
+    map <string, string> file_table;
 
-	prefetcher_code.open(OutputFileDirectory + FileName, ofstream::out);
-	writePrefetchCodeHeader();
+	
+    prefetcher_code.open(OutputFileDirectory + FileName, ofstream::out);
 
-	int mode = ACCESSEDFILE;
+    write_prefetch_code_header();
 
-	cout << endl;
-	cout << ACCESSEDFILE << ". include only accessed files"  << endl;
-	cout << OPENFILE << ". include all opened files" << endl;
-	cout << ": ";
-	cin >> mode;
-	cout << endl;
 
-	switch (mode) {
-		case ACCESSEDFILE:
-            generatePrefetcherCodeWithAccessedFile(target_processes, file_table);
-            break;
+    generate_prefetching_code_with_accessedfile(target_processes, file_table);
+	
+    
+    write_prefetching_code_footer(file_table);
 
-		case OPENFILE:
-			generatePrefetcherCodesWithOpenFiles(target_processes, file_table);
-			break;
-
-		default:
-			break;
-	}
-	writePrefetchCodeFooter(file_table);
 }
 
-void Parser::writePrefetchCodeHeader()
+void Parser::write_prefetch_code_header()
 {
 	prefetcher_code << "#include <stdio.h>" << endl;
 	prefetcher_code << "#include <unistd.h>" << endl;
@@ -4230,7 +4228,7 @@ string Parser::correctFilePathName(string filename)
 #define DEBUG_printPrefetcherCodes 1
 
 enum menuAccessedFile {ONLY_ACCESSED=1, ALL_PART};
-void Parser::generatePrefetcherCodeWithAccessedFile(List <ProcessInfo> *target_processes, map <string, string> &file_table)
+void Parser::generate_prefetching_code_with_accessedfile(List <ProcessInfo> *target_processes, map <string, string> &file_table)
 {
 	int menu;
 
@@ -4245,13 +4243,13 @@ void Parser::generatePrefetcherCodeWithAccessedFile(List <ProcessInfo> *target_p
 		case ONLY_ACCESSED:
 		{
 			prefetcher_code << "\tint i = 0;" << endl;
- 			prefetchOnlyAccessed(target_processes, file_table);
+ 			prefetch_AccessedParts_of_AccessedFiles(target_processes, file_table);
 			break;
 		}
 		
 		case ALL_PART:
 		{
-			prefetchAllFileAccessed(target_processes, file_table);
+			prefetch_AllPart_of_AccessedFiles(target_processes, file_table);
 			break;
 		}
 	}
@@ -4417,7 +4415,7 @@ iotype Parser::checkLogType(string iolog)
 // 	lseek(fd2, 4096, SEEK_SET);
 // 	read(fd2, buf, 4096);
 // 	
-void Parser::prefetchAllFileAccessed(List <ProcessInfo> *target_processes, map <string, string> &file_table)
+void Parser::prefetch_AllPart_of_AccessedFiles(List <ProcessInfo> *target_processes, map <string, string> &file_table)
 {
 	Node <ProcessInfo> *process_iter = target_processes->getHead();
 	map <string, string>::iterator fd_iter;
@@ -4437,26 +4435,22 @@ void Parser::prefetchAllFileAccessed(List <ProcessInfo> *target_processes, map <
 		Node <ParseEntry> *log_iter = log_list->getHead();
 		while (log_iter != NULL)
 		{
-			iotype type = NONE;
+            
+            iotype type = PASS;
 			string iolog = log_iter->entry->getLogMsg();
-
 			type = checkLogType(iolog);
 
+            
 			switch (type)
 			{
-				case NONE:
-				{
-					assert(0);
-					break;
-				}
 
-				case PASS:
-				{
-					assert(1);
-					break;
-				}
-
-				case FADVISE64_64:
+                case PASS:
+                {
+                    break;
+                }
+                    
+                    
+                case FADVISE64_64:
 				case FADVISE64:
 				case VFSCALL:
 				{
@@ -4524,16 +4518,21 @@ void Parser::prefetchAllFileAccessed(List <ProcessInfo> *target_processes, map <
 
 				case TLB:
 				{
-					regex mmap_regex("filename=([a-zA-Z0-9.-_:/]*) pg_idx=([0-9]+)"); // file=cat, pgoff=11, pgsize=32
-					string filename_replace("$1"), pgoff_replace("$2");
+					// string iolog
+                    regex filename_pgidx_regex(".*filename=(.*) pg_idx=(.*)");
+                    smatch filename_pgidx_match;
+                    regex_search(iolog, filename_pgidx_match, filename_pgidx_regex);
+                    
+                    
 
-                    string  filename = regex_replace(iolog, mmap_regex, filename_replace, regex_constants::format_no_copy);
-					string  pgoff = regex_replace(iolog, mmap_regex, pgoff_replace, regex_constants::format_no_copy);
-					string  pgsize = "1";
+                    string  filename = filename_pgidx_match[1];
+                    string  pg_idx = filename_pgidx_match[2];
+					
                     
                     if (filename == "")
                         break;
 
+                    
 					fd_iter = file_table.find(filename);
 					if(file_table.end() == fd_iter) { // no search results, add file_table and write "open"
                     	fd_count = file_table.size();
@@ -4614,7 +4613,7 @@ void Parser::prefetchAllFileAccessed(List <ProcessInfo> *target_processes, map <
 
 #define DEBUG_OnlyAccessedPartOfFile 0
 #define DEBUGING_CODE 0
-void Parser::prefetchOnlyAccessed(List <ProcessInfo> *target_processes, map <string, string> &file_table)
+void Parser::prefetch_AccessedParts_of_AccessedFiles(List <ProcessInfo> *target_processes, map <string, string> &file_table)
 {
 	Node <ProcessInfo> *process_iter = target_processes->getHead();
 	map <string, string>::iterator fd_iter;
@@ -4645,7 +4644,7 @@ void Parser::prefetchOnlyAccessed(List <ProcessInfo> *target_processes, map <str
 		Node <ParseEntry> *log_iter = log_list->getHead();
 		while (log_iter != NULL)
 		{
-			iotype type = NONE;
+            iotype type;
 			string iolog = log_iter->entry->getLogMsg();
 
 #if DEBUG_OnlyAccessedPartOfFile
@@ -4657,12 +4656,6 @@ void Parser::prefetchOnlyAccessed(List <ProcessInfo> *target_processes, map <str
 
 			switch (type)
 			{
-				case NONE:
-				{
-					assert(0);
-					break;
-				}
-
 				case PASS:
 				{
 					assert(1);
@@ -5171,7 +5164,7 @@ void Parser::prefetchOnlyAccessed(List <ProcessInfo> *target_processes, map <str
 #endif
 }
 
-void Parser::writePrefetchCodeFooter(map <string, string> &file_table)
+void Parser::write_prefetching_code_footer(map <string, string> &file_table)
 {
 	map <string, string>::iterator fd_iter = file_table.begin();
 	prefetcher_code << endl;
